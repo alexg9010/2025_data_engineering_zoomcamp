@@ -1,0 +1,10 @@
+name: 01_docker
+channels:
+- conda-forge
+dependencies:
+- python==3.9.5
+- jupyter
+- pgcli
+- pandas<=2
+- sqlalchemy
+- psycopg2

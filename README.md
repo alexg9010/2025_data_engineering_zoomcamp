@@ -1,0 +1,1 @@
+Notes and homework for the [2025 edition](https://github.com/DataTalksClub/data-engineering-zoomcamp/tree/main/cohorts/2025) of the [Data Engineering Zoomcamp](https://github.com/DataTalksClub/data-engineering-zoomcamp/tree/main).

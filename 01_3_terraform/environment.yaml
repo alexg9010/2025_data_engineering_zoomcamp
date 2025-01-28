@@ -1,0 +1,5 @@
+name: 01_3_terraform
+channels:
+- conda-forge
+dependencies:
+- terraform

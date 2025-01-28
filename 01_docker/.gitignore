@@ -1,0 +1,6 @@
+
+## ignore all files in the postgres data directory
+**/ny_taxi_postgres_data/*
+
+## ignore pgadmin configuration files
+**/pgadmin_config/*

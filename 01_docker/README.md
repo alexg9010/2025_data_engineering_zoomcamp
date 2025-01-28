@@ -1,13 +1,69 @@
 # Notes
 
+next lesson: [01_3_terraform](../01_3_terraform/README.md)
+
+- [Notes](#notes)
+  - [Local environment management](#local-environment-management)
+  - [1.2.1 Intro to Docker](#121-intro-to-docker)
+    - [Creating a custom pipeline with Docker](#creating-a-custom-pipeline-with-docker)
+  - [1.2.3 Connect Postgres via PgAdmin](#123-connect-postgres-via-pgadmin)
+    - [install pgAdmin](#install-pgadmin)
+    - [docker create network](#docker-create-network)
+    - [Explore database](#explore-database)
+    - [Fix broken Postgress Docker container](#fix-broken-postgress-docker-container)
+  - [1.2.4 Dockerize Ingestion Script](#124-dockerize-ingestion-script)
+    - [Pandas v2.2.3 error](#pandas-v223-error)
+    - [Write Dockerfile](#write-dockerfile)
+    - [Run in postgres network](#run-in-postgres-network)
+  - [1.2.5 Running Postgres and pgAdmin with Docker-Compose](#125-running-postgres-and-pgadmin-with-docker-compose)
+    - [Safe connected servers](#safe-connected-servers)
+  - [1.2.6 SQL Refresher](#126-sql-refresher)
+    - [Important functions](#important-functions)
+
+
+
+
 ## Local environment management
 
 I use [micromamba](https://mamba.readthedocs.io/en/latest/installation/micromamba-installation.html) to manage my local environment: 
 
+Environment is defined in `environment.yaml`.Folder basename (`$(basename $PWD)`) is used as environment name.
+
+This allows to use distinct environment for every folder in the project.
+
+Environment is created with:
+
 ```bash
 micromamba env create -f environment.yaml
-micromamba activate $(basename $PWD)
+micromamba activate $(basename $PWD`
 ```
+
+This can be used together with [direnv](https://direnv.net/) to automatically activate the environment when entering a folder. See [direnv-automamba](https://github.com/zoof/direnv-automamba/tree/main). 
+
+Add this to your global direnvrc (`$HOME/.config/direnv/direnvrc`):
+
+```bash
+# https://github.com/zoof/direnv-automamba/blob/main/.direnvrc
+layout_mamba() {
+  # initialize micromamba
+  eval "$(micromamba shell hook --shell=zsh)"
+
+  # check if environment name is specified
+  if [ -n "$1" ]; then
+    # Explicit environment name from layout command.
+    local env_name="$1"
+    # activate environment
+    micromamba activate ${env_name}
+  elif (grep -q name: environment.y*ml 2> /dev/null); then
+    # Detect environment name from `environment.yml` file in `.envrc` directory
+    micromamba activate `grep name: environment.y*ml | sed -e 's/name: //'`
+  else
+    # if all else fails, activate base environment
+    micromamba activate base;
+  fi;
+}
+```
+
 
 ## 1.2.1 Intro to Docker
 ![alt text](image.png)
@@ -372,3 +428,273 @@ Source:
 - https://stackoverflow.com/a/77519799
 
 To peek inside the pgadming container use: `docker compose exec pgadmin /bin/bash`
+
+
+## 1.2.6 SQL Refresher
+
+we upload the taxi zone data into the database (see [text](upload_nyc_taxi_zones.ipynb)).
+
+Then we run some `query`'s against the `zone` database:
+
+- count elements in table:
+
+```sql
+SELECT 
+  count(1)
+FROM 
+  zones;
+```
+
+- print all rows from table `zone`
+
+```sql
+SELECT 
+  *
+FROM 
+  zones;
+```
+
+
+- print the first 100 rows from table `yellow_taxi_trips`
+
+```sql
+SELECT 
+  *
+FROM 
+  yellow_taxi_trips
+LIMIT
+  100
+```
+
+
+- perform **inner join** with the location table, but display extended location name instead of ID
+
+```sql
+-- INNER JOIN
+-- perform a join with the location table, but display location name instead of ID	
+SELECT 
+  t.tpep_pickup_datetime,
+  t.tpep_dropoff_datetime,
+  t.total_amount,
+  -- "Borough" means district in BE
+  CONCAT(zpu."Borough",' / ',zpu."Zone") as "pickup_location",
+  CONCAT(zdo."Borough",' / ',zdo."Zone") as "dropoff_location"
+FROM 
+  -- join all tables listed here
+  yellow_taxi_trips t,
+  zones zpu,
+  zones zdo
+WHERE
+  -- and filter by conditions
+  t."PULocationID" = zpu."LocationID" AND
+  t."DOLocationID" = zdo."LocationID"
+LIMIT
+  100
+```
+
+- perform **explicit inner join** with the location table, but display location name instead of ID
+
+```sql
+-- EXPLICIT INNER JOIN
+-- perform a join with the location table, but display location name instead of ID	
+SELECT 
+  t.tpep_pickup_datetime,
+  t.tpep_dropoff_datetime,
+  t.total_amount,
+  -- "Borough" means district in British English
+  CONCAT(zpu."Borough",' / ',zpu."Zone") as "pickup_location",
+  CONCAT(zdo."Borough",' / ',zdo."Zone") as "dropoff_location"
+FROM 
+  -- specifiy JOINing conditions via ON 
+  yellow_taxi_trips t JOIN zones zpu ON t."PULocationID" = zpu."LocationID" 
+  JOIN zones zdo t."DOLocationID" = zdo."LocationID"  
+LIMIT
+  100
+```
+
+
+- Checking for records with NULL Location IDs in the Yellow Taxi table
+
+```sql
+SELECT
+    tpep_pickup_datetime,
+    tpep_dropoff_datetime,
+    total_amount,
+    "PULocationID",
+    "DOLocationID"
+FROM 
+    yellow_taxi_trips t
+WHERE
+    "PULocationID" IS NULL
+    OR "DOLocationID" IS NULL
+LIMIT 100;
+```
+
+- Checking for Location IDs in the Zones table NOT IN the Yellow Taxi table
+
+```sql
+SELECT
+    tpep_pickup_datetime,
+    tpep_dropoff_datetime,
+    total_amount,
+    "PULocationID",
+    "DOLocationID"
+FROM 
+    yellow_taxi_trips t
+WHERE
+    "DOLocationID" NOT IN (SELECT "LocationID" from zones)
+    OR "PULocationID" NOT IN (SELECT "LocationID" from zones)
+LIMIT 100;
+```
+
+- Using LEFT, RIGHT, and OUTER JOINS when some Location IDs are not in either Tables
+
+```sql
+DELETE FROM zones WHERE "LocationID" = 142;
+
+SELECT
+    tpep_pickup_datetime,
+    tpep_dropoff_datetime,
+    total_amount,
+    CONCAT(zpu."Borough", ' | ', zpu."Zone") AS "pickup_loc",
+    CONCAT(zdo."Borough", ' | ', zdo."Zone") AS "dropff_loc"
+FROM 
+    yellow_taxi_trips t
+LEFT JOIN 
+    zones zpu ON t."PULocationID" = zpu."LocationID"
+JOIN
+    zones zdo ON t."DOLocationID" = zdo."LocationID"
+LIMIT 100;
+```
+
+```sql
+SELECT
+    tpep_pickup_datetime,
+    tpep_dropoff_datetime,
+    total_amount,
+    CONCAT(zpu."Borough", ' | ', zpu."Zone") AS "pickup_loc",
+    CONCAT(zdo."Borough", ' | ', zdo."Zone") AS "dropff_loc"
+FROM 
+    yellow_taxi_trips t
+RIGHT JOIN 
+    zones zpu ON t."PULocationID" = zpu."LocationID"
+JOIN
+    zones zdo ON t."DOLocationID" = zdo."LocationID"
+LIMIT 100;
+```
+
+```sql
+SELECT
+    tpep_pickup_datetime,
+    tpep_dropoff_datetime,
+    total_amount,
+    CONCAT(zpu."Borough", ' | ', zpu."Zone") AS "pickup_loc",
+    CONCAT(zdo."Borough", ' | ', zdo."Zone") AS "dropff_loc"
+FROM 
+    yellow_taxi_trips t
+OUTER JOIN 
+    zones zpu ON t."PULocationID" = zpu."LocationID"
+JOIN
+    zones zdo ON t."DOLocationID" = zdo."LocationID"
+LIMIT 100;
+```
+
+- Using GROUP BY to calculate number of trips per day
+
+```sql
+SELECT
+    CAST(tpep_dropoff_datetime AS DATE) AS "day",
+    COUNT(1)
+FROM 
+    yellow_taxi_trips t
+GROUP BY
+    CAST(tpep_dropoff_datetime AS DATE)
+LIMIT 100;
+```
+
+- Using ORDER BY to order the results of your query
+
+```sql
+-- Ordering by day
+
+SELECT
+    CAST(tpep_dropoff_datetime AS DATE) AS "day",
+    COUNT(1)
+FROM 
+    yellow_taxi_trips t
+GROUP BY
+    CAST(tpep_dropoff_datetime AS DATE)
+ORDER BY
+    "day" ASC
+LIMIT 100;
+
+-- Ordering by count
+
+SELECT
+    CAST(tpep_dropoff_datetime AS DATE) AS "day",
+    COUNT(1) AS "count"
+FROM 
+    yellow_taxi_trips t
+GROUP BY
+    CAST(tpep_dropoff_datetime AS DATE)
+ORDER BY
+    "count" DESC
+LIMIT 100;
+```
+
+- Other kinds of aggregations
+
+```sql
+SELECT
+    CAST(tpep_dropoff_datetime AS DATE) AS "day",
+    COUNT(1) AS "count",
+    MAX(total_amount) AS "total_amount",
+    MAX(passenger_count) AS "passenger_count"
+FROM 
+    yellow_taxi_trips t
+GROUP BY
+    CAST(tpep_dropoff_datetime AS DATE)
+ORDER BY
+    "count" DESC
+LIMIT 100;
+```
+
+- Grouping by multiple fields
+
+
+```sql
+SELECT
+    CAST(tpep_dropoff_datetime AS DATE) AS "day",
+    "DOLocationID",
+    COUNT(1) AS "count",
+    MAX(total_amount) AS "total_amount",
+    MAX(passenger_count) AS "passenger_count"
+FROM 
+    yellow_taxi_trips t
+GROUP BY
+    1, 2
+ORDER BY
+    "day" ASC, 
+    "DOLocationID" ASC
+LIMIT 100;
+```
+
+
+### Important functions
+
+- `SELECT`: choose columns to print
+- `FROM`: choose tables where to `SELECT` from
+- `LIMIT`: limit number of rows printed (i.e. head()) 
+- `WHERE`: filter by conditions **after** joining
+- `JOIN/ON`: filter by conditions **during** joining
+- `CAST`: cast column to a different type
+- `GROUP BY`: group by one or more columns
+- `ORDER BY`: order by one or more columns (set `ASC` or `DESC` order)
+- `COUNT`: count number of rows
+- `MAX`: find maximum value of a column
+- `MIN`: find minimum value of a column
+
+
+
+
+

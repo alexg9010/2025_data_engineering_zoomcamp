@@ -15,6 +15,7 @@ next lesson: [01_3_terraform](../01_3_terraform/README.md)
     - [Pandas v2.2.3 error](#pandas-v223-error)
     - [Write Dockerfile](#write-dockerfile)
     - [Run in postgres network](#run-in-postgres-network)
+      - [Upload taxi zones to postgres](#upload-taxi-zones-to-postgres)
   - [1.2.5 Running Postgres and pgAdmin with Docker-Compose](#125-running-postgres-and-pgadmin-with-docker-compose)
     - [Safe connected servers](#safe-connected-servers)
   - [1.2.6 SQL Refresher](#126-sql-refresher)
@@ -389,6 +390,90 @@ docker run -it \
   --url=${URL}
 ```
 
+
+#### Upload taxi zones to postgres
+
+
+We copy url taxi zone lookup data from https://www.nyc.gov/site/tlc/about/tlc-trip-record-data.page. And we store the data in the `zones` table.
+
+First we start the postgres container with the `pg-network` network.
+
+```bash
+ docker run -it\
+  -e POSTGRES_USER="root" \
+  -e POSTGRES_PASSWORD="root" \
+  -e POSTGRES_DB="ny_taxi" \
+  -v $(pwd)/ny_taxi_postgres_data:/var/lib/postgresql/data \
+  -p 5432:5432 \
+  --network pg-network \
+  --name pg-database \
+  --rm \
+  postgres:13
+```
+
+[This](./upload_nyc_taxi_zones.ipynb) simple juypyter notebook shows how to upload the zones data similar to the taxi trips data.
+
+But, we can also do this with the ingestion docker container.
+
+
+
+```bash
+URL="https://d37ci6vzurychx.cloudfront.net/misc/taxi_zone_lookup.csv"
+
+docker run -it \
+  --network=pg-network \
+  ingest_data:v01 \
+  --user="root" \
+  --password="root" \
+  --host="pg-database" \
+  --port="5432" \
+  --db="ny_taxi" \
+  --table="zones" \
+  --url=${URL}
+```
+
+This will fail, because in the ingestion script we are doing some type conversions for the datetime columns. 
+
+```bash
+[...]
+Traceback (most recent call last):
+  File "/app/ingest_data.py", line 89, in <module>
+    main(args)
+  File "/app/ingest_data.py", line 39, in main
+    df.tpep_pickup_datetime = pd.to_datetime(df.tpep_pickup_datetime)
+  File "/usr/local/lib/python3.9/site-packages/pandas/core/generic.py", line 6299, in __getattr__
+    return object.__getattribute__(self, name)
+AttributeError: 'DataFrame' object has no attribute 'tpep_pickup_datetime'
+```
+
+
+We update ingest_data.py to skip datetime conversion if "tpep_pickup_datetime" is not available in dataframe. 
+
+
+Then we build a newer image with newer version of ingest_data.py
+
+```bash
+docker build -t ingest_data:v02 .
+```
+
+And now we ingest the zones table.
+
+```bash
+URL="https://d37ci6vzurychx.cloudfront.net/misc/taxi_zone_lookup.csv"
+
+docker run \
+  --network="pg-network" \
+    -it ingest_data:v02 \
+  --user="root" \
+  --password="root" \
+  --host="pg-database" \
+  --port="5432" \
+  --db="ny_taxi" \
+  --table="zones" \
+  --url=${URL}
+```
+
+This should work now.
 
 
 ## 1.2.5 Running Postgres and pgAdmin with Docker-Compose

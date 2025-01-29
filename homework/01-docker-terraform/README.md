@@ -350,6 +350,13 @@ LIMIT
     10
 ```
 
+```
+18686.680000000044	"Manhattan | East Harlem North"
+16797.260000000064	"Manhattan | East Harlem South"
+13029.79000000004	"Manhattan | Morningside Heights"
+
+```
+
 ## Question 6. Largest tip
 
 For the passengers picked up in October 2019 in the zone
@@ -387,6 +394,10 @@ ORDER BY
     tip_amount DESC
 LIMIT
     10
+```
+
+```
+87.3	"East Harlem North"	"JFK Airport"
 ```
 
 ## Terraform

@@ -33,7 +33,7 @@ We will be using the open source orchestrator [Kestra](https://github.com/kestra
 
 In contrast to automation, where a single task is automated, orchestration involves coordinating and managing a series of tasks or workflows. 
 
-![alt text](image.png)
+![alt text](images/image.png)
 [Source](https://kestra.io/blogs/2024-09-18-what-is-an-orchestrator#orchestration-vs-automation) 
 
 There are different situations where orchestrators are used, for example when building an extract-transform-load (ETL) pipeline, setting up a CI/CD workflow or when deploying a cloud infrastructure (see [Source](https://kestra.io/blogs/2024-09-18-what-is-an-orchestrator#examples-of-orchestration)).
@@ -42,7 +42,7 @@ There are different situations where orchestrators are used, for example when bu
 
 Kestra is an [open source](https://github.com/kestra-io/kestra) [all-in-one](https://kestra.io/features) solution. 
 
-[![alt text](image-2.png)](https://youtu.be/Np6QmmcgLCs?t=100&si=bSID4Zb1etndf7sk)
+[![alt text](images/image-2.png)](https://youtu.be/Np6QmmcgLCs?t=100&si=bSID4Zb1etndf7sk)
 
 
 There is quite a lot of documentation available on the [Kestra website](https://kestra.io/docs/), but [getting started](https://kestra.io/docs/getting-started/quickstart) is quite easy.

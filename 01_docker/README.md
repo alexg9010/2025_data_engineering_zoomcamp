@@ -20,6 +20,7 @@ next lesson: [01_3_terraform](../01_3_terraform/README.md)
     - [Safe connected servers](#safe-connected-servers)
   - [1.2.6 SQL Refresher](#126-sql-refresher)
     - [Important functions](#important-functions)
+  - [1.5.1 Port Mapping and Networks in Docker](#151-port-mapping-and-networks-in-docker)
 
 
 
@@ -783,3 +784,11 @@ LIMIT 100;
 
 
 
+## 1.5.1 Port Mapping and Networks in Docker
+
+[Video](https://youtu.be/tOr4hTsHOzU?si=KIMr8WiN-mvbR3Jv)
+
+This video summarizes the concepts of port mapping inside a Docker container. 
+The concepts and information are partically useful if you already a local instance of postgres running and want to make sure applications or scripts are connecting to the right instance.
+
+![alt text](videoframe_942352.png)

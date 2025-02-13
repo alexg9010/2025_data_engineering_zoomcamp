@@ -14,6 +14,8 @@ previous lesson: [01_docker](../01_docker/README.md)
 - [1.3.3 Terraform Variables](#133-terraform-variables)
   - [Adding BigQuery Dataset](#adding-bigquery-dataset)
   - [Using Variables](#using-variables)
+- [Fixes for Terraform](#fixes-for-terraform)
+  - [Terraform Teardown of BigQuery Dataset](#terraform-teardown-of-bigquery-dataset)
 
 
 
@@ -217,3 +219,25 @@ And running `terraform plan`, followed by `terraform apply` will create a new da
 Instead of hardcoding the project id in the `main.tf` file, we can use variables to make the configuration more flexible.
 
 Variables defined in the `variables.tf` file can be used in the `main.tf` file via the `var` object. When using the vscode extension, the variables are autocompleted. 
+
+
+
+## Fixes for Terraform
+
+### Terraform Teardown of BigQuery Dataset
+
+When running `terraform destroy`, the following error can occur:
+
+```bash
+Do you really want to destroy all resources?
+  Terraform will destroy all your managed infrastructure, as shown above.
+  There is no undo. Only 'yes' will be accepted to confirm.
+
+  Enter a value: yes
+
+google_bigquery_dataset.homework_dataset: Destroying... [id=projects/terraform-demo-449214/datasets/homework_dataset]
+╷
+│ Error: Error when reading or editing Dataset: googleapi: Error 400: Dataset terraform-demo-449214:homework_dataset is still in use, resourceInUse
+```
+
+This is because the dataset is still in use by a table. To delete the dataset, we need to set the `delete_contents_on_destroy` property to `true` in the `main.tf` file.

@@ -1,4 +1,6 @@
 volumes:
+  db-postgres-data:
+  db-pgadmin-config:
   postgres-data:
     driver: local
   kestra-data:
@@ -63,3 +65,27 @@ services:
     depends_on:
       postgres:
         condition: service_started
+
+
+  db-postgres:
+    image: postgres:latest
+    container_name: postgres-db
+    environment:
+      POSTGRES_USER: kestra
+      POSTGRES_PASSWORD: k3str4
+      POSTGRES_DB: postgres-zoomcamp
+    ports:
+      - "5432:5432"
+    volumes:
+      - db-postgres-data:/var/lib/postgresql/data
+
+  db-pgadmin:
+    image: dpage/pgadmin4
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=admin@admin.com
+      - PGADMIN_DEFAULT_PASSWORD=root
+      - PGADMIN_DEFAULT_DB=postgres-zoomcamp
+    volumes:
+      - db-pgadmin-config:/var/lib/pgadmin
+    ports:
+      - "8085:80"

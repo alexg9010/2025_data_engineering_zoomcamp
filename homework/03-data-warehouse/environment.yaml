@@ -1,0 +1,7 @@
+name: 03-data-warehouse-homework
+channels:
+- conda-forge
+dependencies:
+- terraform
+- python=3.9
+- google-cloud-storage

@@ -1,0 +1,9 @@
+name: 04_analytics_engineering
+channels:
+- conda-forge
+dependencies:
+- google-cloud-storage
+- pandas
+- pyarrow
+- python
+

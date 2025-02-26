@@ -39,7 +39,7 @@
 
  The **Analytics Engineer** acts as a bridge between data engineers and analysts by introducing good software engineering practices to enhance data analysis efforts. The **Data Engineer** is responsible for preparing and maintaining the infrastructure that supports the team’s data needs. The **Data Analyst** focuses on using data to answer questions and solve business problems. Together, these roles ensure a seamless workflow in managing, processing, and analyzing data within an organization.
 
-![alt text](image.png)
+![alt text](assets/image.png)
 
 ## Tooling in Data Processing
 
@@ -52,7 +52,7 @@ The data processing workflow consists of four key stages: **Data Loading**, **Da
 
 This structured workflow ensures efficient data management and enables effective decision-making through analytics and visualization.
 
-![alt text](image-1.png)
+![alt text](assets/image-1.png)
 
 ## ETL vs ELT
 
@@ -73,7 +73,7 @@ ETL (Extract, Transform, Load) and ELT (Extract, Load, Transform) are two data p
 
 Each approach has trade-offs, with ETL being better suited for structured, compliance-heavy workflows and ELT offering scalability and flexibility in modern cloud-based architectures.
 
-![alt text](image-2.png)
+![alt text](assets/image-2.png)
 
 ## Kimball’s Dimensional Modeling
 
@@ -91,7 +91,7 @@ Each approach has trade-offs, with ETL being better suited for structured, compl
 
 [Kimball’s dimensional modeling](https://www.kimballgroup.com/data-warehouse-business-intelligence-resources/kimball-techniques/dimensional-modeling-techniques/) is widely used for business intelligence and analytics, offering a balance between ease of use and performance.
 
-![alt text](image-3.png)
+![alt text](assets/image-3.png)
 
 ## Elements of Dimensional Modeling
 
@@ -107,7 +107,7 @@ Each approach has trade-offs, with ETL being better suited for structured, compl
 
 Dimensional modeling organizes data in a way that optimizes it for analytics and reporting, typically using a **star schema**, where a central fact table connects to multiple dimension tables.
 
-![alt text](image-4.png)
+![alt text](assets/image-4.png)
 
 ## Architecture of Dimensional Modeling
 
@@ -135,7 +135,7 @@ The visual analogy to this process would look like a restaurant:
 
 This architecture ensures a well-organized data pipeline, making business intelligence and analytics more effective.
 
-![alt text](image-5.png)
+![alt text](assets/image-5.png)
 
 
 ## What is dbt?
@@ -158,7 +158,7 @@ dbt (Data Build Tool) is a **transformation workflow** that enables users with S
 dbt helps bridge the gap between analytics and engineering, making data transformations more efficient, scalable, and maintainable.
 
 
-![alt text](image-6.png)
+![alt text](assets/image-6.png)
 *Image Source: getdbt.com*
 
 
@@ -204,7 +204,7 @@ Running dbt
 dbt automates and streamlines data transformation, enabling analytics teams to manage transformations efficiently while following software engineering best practices.
 
 
-![alt text](image-7.png)
+![alt text](assets/image-7.png)
 Image Source: holistics.io and getdbt.com
 
 
@@ -234,7 +234,7 @@ dbt Cloud is ideal for teams looking for **scalability, automation, and ease of 
 
 *Slide Source: dbt documentation*
 
-![alt text](image-8.png)
+![alt text](assets/image-8.png)
 
 ## How Are We Going to Use dbt?
 
@@ -265,6 +265,6 @@ dbt can be used in different environments depending on the data warehouse setup.
 dbt provides **flexibility** in implementation, allowing users to develop transformations **in the cloud** or **locally**, depending on their infrastructure and workflow preferences.
 
 
-![alt text](image-9.png)
+![alt text](assets/image-9.png)
 *Slide Source: dbt documentation*
 

@@ -19,6 +19,11 @@
   - [Dremel](#dremel)
   - [Recommended Reading](#recommended-reading)
 - [Machine Learning with BigQuery](#machine-learning-with-bigquery)
+  - [Cost of ML in BigQuery](#cost-of-ml-in-bigquery)
+  - [Steps of ML supported in BigQuery](#steps-of-ml-supported-in-bigquery)
+  - [Decision Tree for ML model selection](#decision-tree-for-ml-model-selection)
+  - [Example of ML model in BigQuery](#example-of-ml-model-in-bigquery)
+  - [Deploying Machine Learning model from BigQuery](#deploying-machine-learning-model-from-bigquery)
 
 ## 3.1.1 Data Warehouse and BigQuery
 
@@ -309,3 +314,42 @@ Column-oriented storage is similar to a columnar database, or data stored in a P
 [Video](https://www.youtube.com/watch?v=B-WtpB0PuG4&list=PL3MmuxUbc_hJed7dXYoJw8DoCuVHhGEQb&index=31)
 
 
+### Cost of ML in BigQuery
+
+
+Usage of ML in BigQuery is include within the BigQuery free tier limits ([Source](https://cloud.google.com/bigquery/pricing?hl=de#free)). This includes:
+
+- 10 GB per month of data storage
+- 1 TB per month of queries processed
+- ML Create model step: First 10 GB per month is free
+
+The different models are priced on-demand:  https://cloud.google.com/bigquery/pricing?hl=de#bqml
+
+### Steps of ML supported in BigQuery
+
+![alt text](image.png)
+[Source](https://www.academicpathologyjournal.org/article/S2374-2895(21)00157-3/fulltext#fig4)
+
+### Decision Tree for ML model selection
+
+https://cloud.google.com/bigquery/docs/bqml-introduction?hl=de#supported_models
+
+![alt text](image-1.png)
+
+
+### Example of ML model in BigQuery
+
+* [SQL for ML in BigQuery](big_query_ml.sql)
+
+**Important links**
+
+- [BigQuery ML Tutorials](https://cloud.google.com/bigquery-ml/docs/tutorials)
+- [BigQuery ML Reference Parameter](https://cloud.google.com/bigquery-ml/docs/analytics-reference-patterns)
+- [Hyper Parameter tuning](https://cloud.google.com/bigquery-ml/docs/reference/standard-sql/bigqueryml-syntax-create-glm)
+- [Feature preprocessing](https://cloud.google.com/bigquery-ml/docs/reference/standard-sql/bigqueryml-syntax-preprocess-overview)
+
+### Deploying Machine Learning model from BigQuery
+
+[Video](https://youtu.be/BjARzEWaznU&list=PL3MmuxUbc_hJed7dXYoJw8DoCuVHhGEQb&index=39)
+
+- [Steps to extract and deploy model with docker](extract_model.md)  

@@ -33,6 +33,8 @@
     - [**BigQuery**](#bigquery)
     - [**Postgres**](#postgres)
     - [**Workflow Overview**](#workflow-overview-1)
+  - [Next Steps](#next-steps)
+  - [Visualising the data with Google Data Studio](#visualising-the-data-with-google-data-studio)
 
 
 ## What is a Analytics Engineering?
@@ -268,3 +270,11 @@ dbt provides **flexibility** in implementation, allowing users to develop transf
 ![alt text](assets/image-9.png)
 *Slide Source: dbt documentation*
 
+## Next Steps
+
+
+[Prepare dbt projects in the Cloud IDE](dbt.md)
+
+## Visualising the data with Google Data Studio
+
+[Video](https://youtu.be/39nLTs74A3E?si=XJVVB3_fVxKoLAjZ)

@@ -306,7 +306,11 @@ where rn = 1
   limit 100
 ```
 
-To solve this I ajusted the casting of payment type to numeric instead of integer. 
+To solve this I ajusted the casting of payment type to numeric instead of integer.
+
+This did resolve my initial issue, but the results do not match the expected results. This is probably due to the fact that I loaded the data from bigquery examples database and not from github.
+
+
 
 ### Question 7: Top #Nth longest P90 travel time Location for FHV
 
@@ -327,6 +331,45 @@ For the Trips that **respectively** started from `Newark Airport`, `SoHo`, and `
 - LaGuardia Airport, Saint Albans, Howard Beach
 - LaGuardia Airport, Rosedale, Bath Beach
 - LaGuardia Airport, Yorkville East, Greenpoint
+
+#### Solution
+
+I was able to create the model, but was not able to build the ``dim_fhv_trips.sql` due to issues with BigQuery. There were type missmatches when trying to build the model.
+
+```sql
+Error while reading table: dbt-demo-451819.trips_data_all.fhv_tripdata_dump, error message: Parquet column 'dropOff_datetime' has type BYTE_ARRAY which does not match the target cpp_type INT64. File: gs://dezoomcamp-dbt--451819-bucket/fhv/fhv_tripdata_2019-03.parquet
+```
+
+There were a [few solutions](https://datatalks-club.slack.com/archives/C01FABYF2RG/p1739725070024049) suggested.
+
+
+I tried to adjust the schema in BigQuery to match the schema of the parquet files, but it did not work.
+
+```
+CREATE OR REPLACE EXTERNAL TABLE `trips_data_all.fhv_tripdata_dump` (
+  dispatching_base_num STRING,
+  pickup_datetime TIMESTAMP,
+  dropoff_datetime TIMESTAMP,
+  PUlocationID FLOAT64,
+  DOlocationID FLOAT64,
+  SR_Flag INT64,
+  Affiliated_base_number STRING
+)
+OPTIONS (
+  format = 'PARQUET',
+  uris = ['gs://dbt-us-45819-bucket/fhv/fhv_tripdata_2019*.parquet']
+);
+```
+
+Simple select statements to test the data failed as well.
+
+```sql
+SELECT * FROM `dbt-demo-451819.trips_data_all.fhv_tripdata_dump` LIMIT 100
+> Error while reading table: dbt-demo-451819.trips_data_all.fhv_tripdata_dump, error message: Parquet column 'dropOff_datetime' has type BYTE_ARRAY which does not match the target cpp_type INT64. File: gs://dbt-us-45819-bucket/fhv/fhv_tripdata_2019-03.parquet
+```
+
+
+
 
 
 ## Submitting the solutions

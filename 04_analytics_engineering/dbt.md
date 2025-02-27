@@ -2,6 +2,19 @@
 
 [Video](https://www.youtube.com/watch?v=1HmL63e-vRs&list=PL3MmuxUbc_hJed7dXYoJw8DoCuVHhGEQb&index=36) | [Setup](https://github.com/DataTalksClub/data-engineering-zoomcamp/tree/main/04-analytics-engineering#setting-up-your-environment)
 
+- [Create dbt project](#create-dbt-project)
+  - [Prerequisites](#prerequisites)
+  - [Important concepts](#important-concepts)
+    - [Anatomy of a dbt model](#anatomy-of-a-dbt-model)
+    - [Sources and Seeds](#sources-and-seeds)
+    - [Macros](#macros)
+    - [dbt packages](#dbt-packages)
+    - [variables](#variables)
+    - [Automated model yaml generation](#automated-model-yaml-generation)
+    - [Testing](#testing)
+    - [Documentation](#documentation)
+    - [Deployment (Cloud)](#deployment-cloud)
+
 
 ## Prerequisites
 To follow this guide, we need to have the following set up:
@@ -120,21 +133,21 @@ ALTER TABLE `trips_data_all.green_tripdata`
   RENAME COLUMN dropoff_location_id TO DOLocationID;
 
 
---  -- Fixes fhv table schema
--- ALTER TABLE `trips_data_all.fhv_tripdata`
---   RENAME COLUMN vendor_id TO VendorID;
--- ALTER TABLE `trips_data_all.fhv_tripdata`
---   RENAME COLUMN pickup_datetime TO lpep_pickup_datetime;
--- ALTER TABLE `trips_data_all.fhv_tripdata`
---   RENAME COLUMN dropoff_datetime TO lpep_dropoff_datetime;
--- ALTER TABLE `trips_data_all.fhv_tripdata`
---   RENAME COLUMN rate_code TO RatecodeID;
--- ALTER TABLE `trips_data_all.fhv_tripdata`
---   RENAME COLUMN imp_surcharge TO improvement_surcharge;
--- ALTER TABLE `trips_data_all.fhv_tripdata`
---   RENAME COLUMN pickup_location_id TO PULocationID;
--- ALTER TABLE `trips_data_all.fhv_tripdata`
---   RENAME COLUMN dropoff_location_id TO DOLocationID;
+ -- Fixes fhv table schema
+ALTER TABLE `trips_data_all.fhv_tripdata`
+  RENAME COLUMN vendor_id TO VendorID;
+ALTER TABLE `trips_data_all.fhv_tripdata`
+  RENAME COLUMN pickup_datetime TO lpep_pickup_datetime;
+ALTER TABLE `trips_data_all.fhv_tripdata`
+  RENAME COLUMN dropoff_datetime TO lpep_dropoff_datetime;
+ALTER TABLE `trips_data_all.fhv_tripdata`
+  RENAME COLUMN rate_code TO RatecodeID;
+ALTER TABLE `trips_data_all.fhv_tripdata`
+  RENAME COLUMN imp_surcharge TO improvement_surcharge;
+ALTER TABLE `trips_data_all.fhv_tripdata`
+  RENAME COLUMN pickup_location_id TO PULocationID;
+ALTER TABLE `trips_data_all.fhv_tripdata`
+  RENAME COLUMN dropoff_location_id TO DOLocationID;
 ```
 
 

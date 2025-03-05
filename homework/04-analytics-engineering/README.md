@@ -18,8 +18,7 @@ For this homework, you will need the following datasets:
 
 #### Solution
 
-Setup of the environment is described 
-
+Setup of the environment is described [here](../../04_analytics_engineering/dbt.md). 
 ### Question 1: Understanding dbt model resolution
 
 Provided you've got the following sources.yaml

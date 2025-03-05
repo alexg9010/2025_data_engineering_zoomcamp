@@ -158,12 +158,12 @@ ALTER TABLE `trips_data_all.fhv_tripdata`
 
 [Video Chapter](https://www.youtube.com/watch?v=ueVy2N54lyc&list=PL3MmuxUbc_hJed7dXYoJw8DoCuVHhGEQb&index=37&t=0s)
 
-![alt text](image-10.png)
+![alt text](./assets/image-10.png)
 We start from our **sources** and build **models** in dbt to perfrom **transformations** on the data.
 
 We go from a dbt **model** to compiled **SQL code** which is run in the database.
 
-![alt text](image-11.png)
+![alt text](./assets/image-11.png)
 
 ### Sources and Seeds
 
@@ -222,7 +222,7 @@ with tripdata as
 
 **Seeds** are static data that we can use in our models. We add them to our repository as csv files. We can use them in our models by using the `ref` function.
 
-![alt text](image-12.png)
+![alt text](./assets/image-12.png)
 
 ### Macros
 
@@ -400,14 +400,14 @@ If we define the payment type values in the global variables, we can use them in
 Every object in dbt can be documented. This is done by adding a `description` property to the object.
 
 In the IDE, there is a button in the top right of the side panel to view documentation for the project.
-![alt text](image-13.png)
+![alt text](./assets/image-13.png)
 
 ### Deployment (Cloud)
 
 We create a new environment `Production` in the dbt Cloud UI, use the connection to the BigQuery project, and deploy under `prod`.
-![alt text](image-14.png)
-![alt text](image-15.png)
-![alt text](image-16.png)
+![alt text](./assets/image-14.png)
+![alt text](./assets/image-15.png)
+![alt text](./assets/image-16.png)
 
 Then we create a new job to deploy the project to the `Production` environment. We can trigger this job based on a schedule,  manually or via an API.
-![alt text](image-17.png)
+![alt text](./assets/image-17.png)

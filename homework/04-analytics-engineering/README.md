@@ -19,6 +19,9 @@ For this homework, you will need the following datasets:
 #### Solution
 
 Setup of the environment is described [here](../../04_analytics_engineering/dbt.md#prerequisites). 
+
+We use terraform to deploy the environment, which is described [here](../../04_analytics_engineering/dbt.md#use-terrafrom). We adjust the upload script to fix some schema issues, which is described [here](../../04_analytics_engineering/dbt.md#fix-schema-issues). Then we use the web_to_gcs.py script to upload the data to GCS, which is described [here](../../04_analytics_engineering/dbt.md#upload-data-to-gcs). Finally we run local dbt, which is described [here](../../04_analytics_engineering/dbt.md#run-local-dbt).
+
 ### Question 1: Understanding dbt model resolution
 
 Provided you've got the following sources.yaml
@@ -235,23 +238,23 @@ with trips_data as (
 YOY growth results:
 
 | revenue_quarter | service_type | revenue_quarterly_total_amount | revenue_last_year_same_quarter | yoy_revenue_growth | best | worst |
-| --- | --- | --- | --- | --- | --- | --- |
-| 2019/Q1 | Yellow | 186774928.52 |  |  | |  | 
-| 2019/Q1 | Green | 28923911.8 |  |  | |  |
-| 2019/Q2 | Yellow | 204185297.38 |  |  |   |  |
-| 2019/Q2 | Green | 23903138.63 |  |  |   |  |
-| 2019/Q3 | Yellow | 190600121.27 |  |  | |  |
-| 2019/Q3 | Green | 20074203.17 |  |  | |  |
-| 2019/Q4 | Yellow | 195441626.53 |  |  | |  |
-| 2019/Q4 | Green | 18493342.22 |  |  | |  |
-| 2020/Q1 | Yellow | 148379572.13 | 186774928.52 | -20.5570184 | x |  | 
-| 2020/Q1 | Green | 13693799.06 | 28923911.8 | -52.6557848 | x |  | 
-| 2020/Q2 | Yellow | 18399392.84 | 204185297.38 | -90.9888748 | | x | 
-| 2020/Q2 | Green | 2761935.64 | 23903138.63 | -88.4453013 | |  x| 
-| 2020/Q3 | Yellow | 46005726.92 | 190600121.27 | -75.862698 | |  | 
-| 2020/Q3 | Green | 4326703.35 | 20074203.17 | -78.4464503 | |  | 
-| 2020/Q4 | Yellow | 62204346.4 | 195441626.53 | -68.1724167 | |  | 
-| 2020/Q4 | Green | 4326012.1 | 18493342.22 | -76.6077324 | |  | 
+| --------------- | ------------ | ------------------------------ | ------------------------------ | ------------------ | ---- | ----- |
+| 2019/Q1         | Yellow       | 186774928.52                   |                                |                    |      |       |
+| 2019/Q1         | Green        | 28923911.8                     |                                |                    |      |       |
+| 2019/Q2         | Yellow       | 204185297.38                   |                                |                    |      |       |
+| 2019/Q2         | Green        | 23903138.63                    |                                |                    |      |       |
+| 2019/Q3         | Yellow       | 190600121.27                   |                                |                    |      |       |
+| 2019/Q3         | Green        | 20074203.17                    |                                |                    |      |       |
+| 2019/Q4         | Yellow       | 195441626.53                   |                                |                    |      |       |
+| 2019/Q4         | Green        | 18493342.22                    |                                |                    |      |       |
+| 2020/Q1         | Yellow       | 148379572.13                   | 186774928.52                   | -20.5570184        | x    |       |
+| 2020/Q1         | Green        | 13693799.06                    | 28923911.8                     | -52.6557848        | x    |       |
+| 2020/Q2         | Yellow       | 18399392.84                    | 204185297.38                   | -90.9888748        |      | x     |
+| 2020/Q2         | Green        | 2761935.64                     | 23903138.63                    | -88.4453013        |      | x     |
+| 2020/Q3         | Yellow       | 46005726.92                    | 190600121.27                   | -75.862698         |      |       |
+| 2020/Q3         | Green        | 4326703.35                     | 20074203.17                    | -78.4464503        |      |       |
+| 2020/Q4         | Yellow       | 62204346.4                     | 195441626.53                   | -68.1724167        |      |       |
+| 2020/Q4         | Green        | 4326012.1                      | 18493342.22                    | -76.6077324        |      |       |
 
 
 ### Question 6: P97/P95/P90 Taxi Monthly Fare

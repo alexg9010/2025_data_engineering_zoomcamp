@@ -32,6 +32,15 @@ def upload_to_gcs(bucket, object_name, local_file):
     blob.upload_from_filename(local_file)
 
 
+def fix_types(df):
+    # cast time data to timestamp
+    for column in df.filter(regex='datetime').columns:
+        df[column] = pd.to_datetime(df[column])
+    # also cast IDs and types to integer
+    for column in df.filter(regex='ID|type').columns:
+        df[column] = df[column].astype('Int64') 
+    return df
+
 def web_to_gcs(year, service):
     for i in range(12):
         
@@ -48,20 +57,39 @@ def web_to_gcs(year, service):
         open(file_name, 'wb').write(r.content)
         print(f"Local: {file_name}")
 
-        # read it back into a parquet file
+        # load as csv 
         df = pd.read_csv(file_name, compression='gzip')
+        #fix schema
+        df = fix_types(df)
+        # read it back into a parquet file
         file_name = file_name.replace('.csv.gz', '.parquet')
         df.to_parquet(file_name, engine='pyarrow')
-        print(f"Parquet: {file_name}")
+        print(f"Parquet: {file_name}")        
 
         # upload it to gcs 
-        upload_to_gcs(BUCKET, f"{service}/{file_name}", file_name)
-        print(f"GCS: {service}/{file_name}")
+        result = upload_to_gcs(BUCKET, f"{service}/{file_name}", file_name)
+        if isinstance(result, Exception):
+            print("Failed to upload {} due to exception: {}".format(file_name, result))
+        else:
+            print(f"GCS: {service}/{file_name}")
+            os.remove(file_name)
+            os.remove(file_name.replace('.parquet', '.csv.gz'))
+        
 
 
-# web_to_gcs('2019', 'green')
-# web_to_gcs('2020', 'green')
-web_to_gcs('2019', 'yellow')
-web_to_gcs('2020', 'yellow')
+if __name__ == "__main__":    
+    YEAR = os.environ.get('YEAR')
+    SERVICE = os.environ.get('SERVICE')
+    if YEAR is not None and SERVICE is not None:
+        web_to_gcs(YEAR, SERVICE)
+    elif YEAR is not None:
+        web_to_gcs(YEAR, 'green')
+        web_to_gcs(YEAR, 'yellow')
+        web_to_gcs(YEAR, 'fhv')
+    else:
+        web_to_gcs('2019', 'green')
+        web_to_gcs('2020', 'green')
+        web_to_gcs('2019', 'yellow')
+        web_to_gcs('2020', 'yellow')
 
-# web_to_gcs('2019', 'fhv')
+        web_to_gcs('2019', 'fhv')

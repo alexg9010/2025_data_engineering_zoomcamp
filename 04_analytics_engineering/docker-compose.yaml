@@ -1,0 +1,15 @@
+version: '3'
+services:
+  dbt-bq-dtc:
+    build:
+      context: .
+      target: dbt-bigquery
+    image: dbt/bigquery
+    volumes:
+      - .:/usr/app
+      - ./dbt/:/root/.dbt/
+      - ./taxi_rides_ny:/usr/app/dbt/taxi_rides_ny
+      - $HOME/.config/gcloud/application_default_credentials.json:/.config/gcloud/application_default_credentials.json
+    environment:
+      - GOOGLE_APPLICATION_CREDENTIALS=/.config/gcloud/application_default_credentials.json
+    network_mode: host

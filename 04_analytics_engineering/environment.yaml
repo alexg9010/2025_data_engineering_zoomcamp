@@ -6,4 +6,6 @@ dependencies:
 - pandas
 - pyarrow
 - python
+- jupyter
+- terraform 
 

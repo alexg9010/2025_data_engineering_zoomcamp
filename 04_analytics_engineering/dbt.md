@@ -4,6 +4,11 @@
 
 - [Create dbt project](#create-dbt-project)
   - [Prerequisites](#prerequisites)
+    - [Use Terrafrom](#use-terrafrom)
+    - [Fix Schema issues](#fix-schema-issues)
+    - [Upload data to GCS](#upload-data-to-gcs)
+    - [Define Tables in BigQuery](#define-tables-in-bigquery)
+    - [Run local dbt](#run-local-dbt)
   - [Important concepts](#important-concepts)
     - [Anatomy of a dbt model](#anatomy-of-a-dbt-model)
     - [Sources and Seeds](#sources-and-seeds)
@@ -150,6 +155,154 @@ ALTER TABLE `trips_data_all.fhv_tripdata`
   RENAME COLUMN dropoff_location_id TO DOLocationID;
 ```
 
+
+> IMPORTANT: This did not work out in the end. I had to switch to using the taxi data provided at github.
+
+### Use Terrafrom
+
+Instead of using the public bigquery data, we can rather use terraform to set things up. We create a GCS bucket and upload the data there using the `web_to_gcs.py` script.
+
+
+```sh
+terraform -chdir=terraform/ init
+terraform -chdir=terraform/ plan
+terraform -chdir=terraform/ apply
+```
+
+### Fix Schema issues
+
+As mentioned above, we need to fix the schema issues in the tables. The `web_to_gcs.py` has been adjusted to fix the schema issues encountered above. We introduce the `fix_types` function to cast columns to the correct data type.
+
+```python
+def fix_types(df):
+    # cast time data to timestamp
+    for column in df.filter(regex='datetime').columns:
+        df[column] = pd.to_datetime(df[column])
+    # also cast IDs and types to integer
+    for column in df.filter(regex='ID|type').columns:
+        df[column] = df[column].astype('int') 
+    return df
+```
+
+
+However, when running the `web_to_gcs.py` script, we get the following error on the green data for 07-2019: 
+
+```sh
+Local: green_tripdata_2019-07.csv.gz
+/Users/agosdsc/Library/CloudStorage/OneDrive-Personal/Courses/2025_data_engineering_zoomcamp/04_analytics_engineering/web_to_gcs.py:61: DtypeWarning: Columns (3) have mixed types. Specify dtype option on import or set low_memory=False.
+  df = pd.read_csv(file_name, compression='gzip')
+Traceback (most recent call last):
+  File "/Users/agosdsc/Library/CloudStorage/OneDrive-Personal/Courses/2025_data_engineering_zoomcamp/04_analytics_engineering/web_to_gcs.py", line 79, in <module>
+    web_to_gcs('2019', 'green')
+    ~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/Users/agosdsc/Library/CloudStorage/OneDrive-Personal/Courses/2025_data_engineering_zoomcamp/04_analytics_engineering/web_to_gcs.py", line 63, in web_to_gcs
+    df = fix_types(df)
+  File "/Users/agosdsc/Library/CloudStorage/OneDrive-Personal/Courses/2025_data_engineering_zoomcamp/04_analytics_engineering/web_to_gcs.py", line 41, in fix_types
+    df[column] = df[column].astype('int')
+                 ~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/Users/agosdsc/micromamba/envs/04_analytics_engineering/lib/python3.13/site-packages/pandas/core/generic.py", line 6643, in astype
+    new_data = self._mgr.astype(dtype=dtype, copy=copy, errors=errors)
+  File "/Users/agosdsc/micromamba/envs/04_analytics_engineering/lib/python3.13/site-packages/pandas/core/internals/managers.py", line 430, in astype
+    return self.apply(
+           ~~~~~~~~~~^
+        "astype",
+        ^^^^^^^^^
+    ...<3 lines>...
+        using_cow=using_copy_on_write(),
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/agosdsc/micromamba/envs/04_analytics_engineering/lib/python3.13/site-packages/pandas/core/internals/managers.py", line 363, in apply
+    applied = getattr(b, f)(**kwargs)
+  File "/Users/agosdsc/micromamba/envs/04_analytics_engineering/lib/python3.13/site-packages/pandas/core/internals/blocks.py", line 758, in astype
+    new_values = astype_array_safe(values, dtype, copy=copy, errors=errors)
+  File "/Users/agosdsc/micromamba/envs/04_analytics_engineering/lib/python3.13/site-packages/pandas/core/dtypes/astype.py", line 237, in astype_array_safe
+    new_values = astype_array(values, dtype, copy=copy)
+  File "/Users/agosdsc/micromamba/envs/04_analytics_engineering/lib/python3.13/site-packages/pandas/core/dtypes/astype.py", line 182, in astype_array
+    values = _astype_nansafe(values, dtype, copy=copy)
+  File "/Users/agosdsc/micromamba/envs/04_analytics_engineering/lib/python3.13/site-packages/pandas/core/dtypes/astype.py", line 101, in _astype_nansafe
+    return _astype_float_to_int_nansafe(arr, dtype, copy)
+  File "/Users/agosdsc/micromamba/envs/04_analytics_engineering/lib/python3.13/site-packages/pandas/core/dtypes/astype.py", line 145, in _astype_float_to_int_nansafe
+    raise IntCastingNaNError(
+        "Cannot convert non-finite values (NA or inf) to integer"
+    )
+pandas.errors.IntCastingNaNError: Cannot convert non-finite values (NA or inf) to integer
+```
+
+To fix this error we need to cast to 'Int64' instead of 'int' in the `fix_types` function.
+
+
+### Upload data to GCS
+
+```sh
+# test with green data
+GCP_GCS_BUCKET="dezoomcamp-dbt--451819-bucket" YEAR="2019" SERVICE="green" python web_to_gcs.py
+```
+
+```sh
+# run for all data
+GCP_GCS_BUCKET="dezoomcamp-dbt--451819-bucket" python web_to_gcs.py
+```
+
+### Define Tables in BigQuery
+
+In bigquery, I create a new table for each service in the  `trips_data_all`  dataset using the following SQL queries:
+
+
+```sql
+-- Create external table referring to gcs path
+-- use PARQUET format (https://cloud.google.com/bigquery/docs/loading-data-cloud-storage-parquet?hl=de)
+CREATE OR REPLACE EXTERNAL TABLE `trips_data_all.green_tripdata`
+OPTIONS (
+  format = 'PARQUET',
+  uris = ['https://storage.cloud.google.com/dezoomcamp-dbt--451819-bucket/green/green_tripdata_2019-*.parquet']
+);
+
+-- Create external table referring to gcs path
+-- use PARQUET format (https://cloud.google.com/bigquery/docs/loading-data-cloud-storage-parquet?hl=de)
+CREATE OR REPLACE EXTERNAL TABLE `trips_data_all.yellow_tripdata`
+OPTIONS (
+  format = 'PARQUET',
+  uris = ['https://storage.cloud.google.com/dezoomcamp-dbt--451819-bucket/yellow/yellow_tripdata_2019-*.parquet']
+);
+
+-- Create external table referring to gcs path
+-- use PARQUET format (https://cloud.google.com/bigquery/docs/loading-data-cloud-storage-parquet?hl=de)
+CREATE OR REPLACE EXTERNAL TABLE `trips_data_all.fhv_tripdata`
+OPTIONS (
+  format = 'PARQUET',
+  uris = ['https://storage.cloud.google.com/dezoomcamp-dbt--451819-bucket/fhv/fhv_tripdata_2019-*.parquet']
+);
+```
+
+> NOTE: This step can be skipped if we define the external tables in the `models/staging/schema.yml` file.
+
+### Run local dbt
+
+Set up a dbt profile for bigquery that specifies the project and dataset in [dbt/profiles.yml](./dbt/profiles.yml). Use method `oauth` to authenticate with a service account.
+
+```sh
+ gcloud auth application-default login
+```
+
+Copy the Dockerfile from github:
+
+```
+wget https://raw.githubusercontent.com/DataTalksClub/data-engineering-zoomcamp/refs/heads/main/04-analytics-engineering/docker_setup/Dockerfile
+```
+
+Create a [docker compose file](./docker-compose.yaml) that mounts the local folder and the dbt profile file.
+
+Build the dbt image:
+```sh
+docker compose build 
+```
+Initialize dbt:
+```sh
+docker compose run dbt-bq-dtc init
+```
+
+docker compose run --workdir="//usr/app/dbt/taxi_rides_ny" dbt-bq-dtc debug
 
 
 ## Important concepts

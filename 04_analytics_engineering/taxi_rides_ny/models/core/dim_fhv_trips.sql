@@ -2,7 +2,7 @@
 
 
 with
-    fhv_tripdata as (select * from {{ ref("stg_staging__fhv_tripdata_dump") }}),
+    fhv_tripdata as (select * from {{ ref("stg_fhv_tripdata") }}),
     dim_zones as (select * from {{ ref("dim_zones") }} where borough != 'Unknown')
 
 select

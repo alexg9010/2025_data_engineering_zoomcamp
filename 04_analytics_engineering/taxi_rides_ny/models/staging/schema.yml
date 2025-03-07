@@ -7,10 +7,25 @@ sources:
       # loaded_at_field: record_loaded_at
     tables:
       - name: green_tripdata
+        # BigQuery can infer your schema (columns + partitions)
+        external:
+          location: 'gs://dezoomcamp-dbt--451819-bucket/green/*.parquet'
+          options:
+            format: PARQUET
       - name: yellow_tripdata
+       # BigQuery can infer your schema (columns + partitions)
+        external:
+          location: 'gs://dezoomcamp-dbt--451819-bucket/yellow/*.parquet'
+          options:
+            format: PARQUET
          # freshness:
            # error_after: {count: 6, period: hour}
-      - name: fhv_tripdata_dump
+      - name: fhv_tripdata
+      # BigQuery can infer your schema (columns + partitions)
+        external:
+          location: 'gs://dezoomcamp-dbt--451819-bucket/fhv/*.parquet'
+          options:
+            format: PARQUET
 
 models:
     - name: stg_green_tripdata

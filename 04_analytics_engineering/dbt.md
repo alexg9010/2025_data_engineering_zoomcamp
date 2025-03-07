@@ -4,6 +4,7 @@
 
 - [Create dbt project](#create-dbt-project)
   - [Prerequisites](#prerequisites)
+    - [Use BigQuery public data](#use-bigquery-public-data)
     - [Use Terrafrom](#use-terrafrom)
     - [Fix Schema issues](#fix-schema-issues)
     - [Upload data to GCS](#upload-data-to-gcs)
@@ -31,6 +32,8 @@ To follow this guide, we need to have the following set up:
   - Green taxi data - Years 2019 and 2020
   - fhv data - Year 2019.
 
+
+### Use BigQuery public data
 
 First I create a new project in Google Cloud:
 
@@ -297,13 +300,16 @@ Build the dbt image:
 ```sh
 docker compose build 
 ```
-Initialize dbt:
+
+(Optional) Initialize dbt:
 ```sh
 docker compose run dbt-bq-dtc init
 ```
 
+Check our taxi rides data:
+```sh
 docker compose run --workdir="//usr/app/dbt/taxi_rides_ny" dbt-bq-dtc debug
-
+```
 
 ## Important concepts
 

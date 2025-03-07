@@ -1,0 +1,14 @@
+bq-dbt-workshop:
+  outputs:
+    dev:
+      dataset: trips_data_all
+      fixed_retries: 1
+      location: EU
+      method: oauth
+      priority: interactive
+      project: dbt-demo-451819
+      threads: 4
+      timeout_seconds: 300
+      type: bigquery
+  target: dev
+

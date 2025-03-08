@@ -20,7 +20,7 @@ For this homework, you will need the following datasets:
 
 Setup of the environment is described [here](../../04_analytics_engineering/dbt.md#prerequisites). 
 
-We use terraform to deploy the environment, which is described [here](../../04_analytics_engineering/dbt.md#use-terrafrom). We adjust the upload script to fix some schema issues, which is described [here](../../04_analytics_engineering/dbt.md#fix-schema-issues). Then we use the web_to_gcs.py script to upload the data to GCS, which is described [here](../../04_analytics_engineering/dbt.md#upload-data-to-gcs). Finally we run local dbt, which is described [here](../../04_analytics_engineering/dbt.md#run-local-dbt).
+We use terraform to deploy the environment, which is described [here](../../04_analytics_engineering/dbt.md#use-terrafrom). We adjust the upload script to fix some schema issues, which is described [here](../../04_analytics_engineering/dbt.md#fix-schema-issues). Then we use the web_to_gcs.py script to upload the data to GCS, which is described [here](../../04_analytics_engineering/dbt.md#upload-data-to-gcs). Finally we run cloud dbt, which is described [here](../../04_analytics_engineering/dbt.md#setup-cloud-dbt).
 
 ### Question 1: Understanding dbt model resolution
 

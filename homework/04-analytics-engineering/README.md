@@ -208,7 +208,7 @@ Considering the YoY Growth in 2020, which were the yearly quarters with the best
 
 #### Solution
 
-To calculate the yoy growth, we can write this query:
+To calculate the yoy growth, we can write this query (or run dbt with the [`fct_taxi_trips_quarterly_revenue.sql`](../../04_analytics_engineering/taxi_rides_ny/models/core/fct_taxi_trips_quarterly_revenue.sql) model):
 
 ```sql
 -- Compute the Quarterly Revenues for each year for based on `total_amount`
@@ -237,24 +237,24 @@ with trips_data as (
 
 YOY growth results:
 
-| revenue_quarter | service_type | revenue_quarterly_total_amount | revenue_last_year_same_quarter | yoy_revenue_growth | best | worst |
-| --------------- | ------------ | ------------------------------ | ------------------------------ | ------------------ | ---- | ----- |
-| 2019/Q1         | Yellow       | 186774928.52                   |                                |                    |      |       |
-| 2019/Q1         | Green        | 28923911.8                     |                                |                    |      |       |
-| 2019/Q2         | Yellow       | 204185297.38                   |                                |                    |      |       |
-| 2019/Q2         | Green        | 23903138.63                    |                                |                    |      |       |
-| 2019/Q3         | Yellow       | 190600121.27                   |                                |                    |      |       |
-| 2019/Q3         | Green        | 20074203.17                    |                                |                    |      |       |
-| 2019/Q4         | Yellow       | 195441626.53                   |                                |                    |      |       |
-| 2019/Q4         | Green        | 18493342.22                    |                                |                    |      |       |
-| 2020/Q1         | Yellow       | 148379572.13                   | 186774928.52                   | -20.5570184        | x    |       |
-| 2020/Q1         | Green        | 13693799.06                    | 28923911.8                     | -52.6557848        | x    |       |
-| 2020/Q2         | Yellow       | 18399392.84                    | 204185297.38                   | -90.9888748        |      | x     |
-| 2020/Q2         | Green        | 2761935.64                     | 23903138.63                    | -88.4453013        |      | x     |
-| 2020/Q3         | Yellow       | 46005726.92                    | 190600121.27                   | -75.862698         |      |       |
-| 2020/Q3         | Green        | 4326703.35                     | 20074203.17                    | -78.4464503        |      |       |
-| 2020/Q4         | Yellow       | 62204346.4                     | 195441626.53                   | -68.1724167        |      |       |
-| 2020/Q4         | Green        | 4326012.1                      | 18493342.22                    | -76.6077324        |      |       |
+| revenue_quarter | service_type | revenue_quarterly_total_amount | total_quarterly_trips | avg_quarterly_passenger_count | avg_quarterly_trip_distance | revenue_last_year_same_quarter | yoy_quarter_revenue_growth | best | worst |
+| --------------- | ------------ | ------------------------------ | --------------------- | ----------------------------- | --------------------------- | ------------------------------ | -------------------------- | ---- | ----- |
+| 2019/Q1         | Yellow       | 182726358.87                   | 10489548              | 1.5476042437672244            | 2.91624815                  |                                |                            |      |       |
+| 2019/Q1         | Green        | 26440852.61                    | 1604976               | 1.3081167568860843            | 3.468105149                 |                                |                            |      |       |
+| 2019/Q2         | Yellow       | 200295923.47                   | 10411590              | 1.5452439060700625            | 3.070792217                 |                                |                            |      |       |
+| 2019/Q2         | Green        | 21498354                       | 1353154               | 1.3114612231867182            | 2.982639995                 |                                |                            |      |       |
+| 2019/Q3         | Yellow       | 186983362.72                   | 9680794               | 1.5451136549336757            | 3.101015635                 |                                |                            |      |       |
+| 2019/Q3         | Green        | 17651104.72                    | 1125486               | 1.3064231807414746            | 2.835406962                 |                                |                            |      |       |
+| 2019/Q4         | Yellow       | 191427003.58                   | 9997844               | 1.5242284236481394            | 2.962192772                 |                                |                            |      |       |
+| 2019/Q4         | Green        | 15680616.87                    | 1028597               | 1.3090112065269486            | 2.644743986                 |                                |                            |      |       |
+| 2020/Q1         | Yellow       | 144118553.94                   | 7919760               | 1.4796270341525504            | 2.828539319                 | 182726358.87                   | -21.1287551                | x    |       |
+| 2020/Q1         | Green        | 11480845.79                    | 771967                | 1.3045959218464012            | 2.618265237                 | 26440852.61                    | -56.5791393                | x    |       |
+| 2020/Q2         | Yellow       | 15560725.84                    | 935075                | 1.330953132101703             | 2.719010807                 | 200295923.47                   | -92.231132                 |      | x     |
+| 2020/Q2         | Green        | 1544036.31                     | 92030                 | 1.1903401064870149            | 4.839079431                 | 21498354                       | -92.8178859                |      | x     |
+| 2020/Q3         | Yellow       | 41404401.54                    | 2476467               | 1.4020974234665762            | 2.714567697                 | 186983362.72                   | -77.8566387                |      |       |
+| 2020/Q3         | Green        | 2360835.79                     | 135061                | 1.269352366708377             | 4.181956079                 | 17651104.72                    | -86.624997                 |      |       |
+| 2020/Q4         | Yellow       | 56283855.99                    | 3437267               | 1.4123220570296102            | 2.499893308                 | 191427003.58                   | -70.5977449                |      |       |
+| 2020/Q4         | Green        | 2441470.26                     | 143369                | 1.2898534550704837            | 3.589875705                 | 15680616.87                    | -84.4300114                |      |       |
 
 
 ### Question 6: P97/P95/P90 Taxi Monthly Fare
@@ -273,12 +273,12 @@ Now, what are the values of `p97`, `p95`, `p90` for Green Taxi and Yellow Taxi, 
 
 #### Solution
 
-**Big Issue**: Using the hack to load the datasets, the payment_type description is not loaded correctly. While the yellow dataset is correct, the green dataset cannot be resolved correctly. 
-Yellow payment_types contain no floating point numbers, while green dataset payment types end in `.0`, e.g 1.0, 2.0 etc which cannot be safely casted to integer.
+~~**Big Issue**: Using the hack to load the datasets, the payment_type description is not loaded correctly. While the yellow dataset is correct, the green dataset cannot be resolved correctly. 
+Yellow payment_types contain no floating point numbers, while green dataset payment types end in `.0`, e.g 1.0, 2.0 etc which cannot be safely casted to integer.~~
 
-When inspecting the staging process I noticed that the payment type is not loaded correctly, it will `0` after the safe_cast, and the description will always be EMPTY. 
+~~When inspecting the staging process I noticed that the payment type is not loaded correctly, it will `0` after the safe_cast, and the description will always be EMPTY.~~
 
-When trying to do a simple cast, I get the following error: `Bad int64 value: 1.0`
+~~When trying to do a simple cast, I get the following error: `Bad int64 value: 1.0`~~
 
 ```sql
 with tripdata as 

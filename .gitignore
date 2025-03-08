@@ -7,3 +7,7 @@
 ## ignore pgadmin configuration files
 **/pgadmin_config/*
 
+## ignore any terraform temp files
+**.terraform
+**.terraform*
+**.tfstate*

@@ -9,7 +9,11 @@
     - [Fix Schema issues](#fix-schema-issues)
     - [Upload data to GCS](#upload-data-to-gcs)
     - [Define Tables in BigQuery](#define-tables-in-bigquery)
-    - [Run local dbt](#run-local-dbt)
+      - [Define external Tables in DBT](#define-external-tables-in-dbt)
+    - [Setup cloud dbt](#setup-cloud-dbt)
+    - [Run local dbt in Docker](#run-local-dbt-in-docker)
+    - [Build](#build)
+      - [Install deps](#install-deps)
   - [Important concepts](#important-concepts)
     - [Anatomy of a dbt model](#anatomy-of-a-dbt-model)
     - [Sources and Seeds](#sources-and-seeds)
@@ -238,13 +242,20 @@ To fix this error we need to cast to 'Int64' instead of 'int' in the `fix_types`
 ### Upload data to GCS
 
 ```sh
-# test with green data
-GCP_GCS_BUCKET="dezoomcamp-dbt--451819-bucket" YEAR="2019" SERVICE="green" python web_to_gcs.py
+# run with fhv data
+GCP_GCS_BUCKET="dezoomcamp-dbt--451819-bucket" YEAR="2019" SERVICE="fhv" python web_to_gcs.py
 ```
 
 ```sh
-# run for all data
-GCP_GCS_BUCKET="dezoomcamp-dbt--451819-bucket" python web_to_gcs.py
+# Run the script for all data for the years 2019 and 2020
+for YEAR in {2019..2020} 
+  do 
+    for SERVICE in green yellow
+      do 
+      echo "GCP_GCS_BUCKET='dezoomcamp-dbt--451819-bucket' YEAR='$YEAR' SERVICE='$SERVICE' python web_to_gcs.py" 
+   done
+done | xargs -0 -n 1 -P 4 sh -c
+
 ```
 
 ### Define Tables in BigQuery
@@ -280,7 +291,41 @@ OPTIONS (
 
 > NOTE: This step can be skipped if we define the external tables in the `models/staging/schema.yml` file.
 
-### Run local dbt
+#### Define external Tables in DBT
+
+We can use the plugin for [external tables](https://github.com/dbt-labs/dbt-external-tables?tab=readme-ov-file). In the [staging schema](taxi_rides_ny/models/staging/schema.yml), we define the sources for the staging tables as external following the [example for bigquery](https://github.com/dbt-labs/dbt-external-tables/blob/main/sample_sources/bigquery.yml).
+
+```sql 
+sources:
+  - name: staging
+    database: "{{ env_var('DBT_DATABASE', 'dbt-demo-451819') }}"
+    schema: "{{ env_var('DBT_SCHEMA', 'trips_data_all') }}"
+      # loaded_at_field: record_loaded_at
+    tables:
+      - name: green_tripdata
+        # BigQuery can infer your schema (columns + partitions)
+        external:
+          location: 'gs://dezoomcamp-dbt--451819-bucket/green/*.parquet'
+          options:
+            format: PARQUET
+[...]
+```
+
+Then we run this command to initialize the external tables:
+
+```sh
+dbt run-operation stage_external_sources
+```
+
+### Setup cloud dbt
+
+Follow the setup guide for [Cloud dbt](https://github.com/DataTalksClub/data-engineering-zoomcamp/blob/main/04-analytics-engineering/dbt_cloud_setup.md). 
+
+> IMPORTANT: For the Bigquery service account, you may need to add `Storage Object User` role in addition to the `BigQuery Job User` and `BigQuery Data Editor` roles. 
+
+
+
+### Run local dbt in Docker
 
 Set up a dbt profile for bigquery that specifies the project and dataset in [dbt/profiles.yml](./dbt/profiles.yml). Use method `oauth` to authenticate with a service account.
 
@@ -306,10 +351,98 @@ docker compose build
 docker compose run dbt-bq-dtc init
 ```
 
-Check our taxi rides data:
+Check our taxi rides setup:
 ```sh
 docker compose run --workdir="//usr/app/dbt/taxi_rides_ny" dbt-bq-dtc debug
 ```
+
+
+### Build
+
+
+```sh
+docker compose run --workdir="//usr/app/dbt/taxi_rides_ny" dbt-bq-dtc build
+```
+
+This returns an error:
+
+```sh
+15:00:58  Running with dbt=1.0.9
+15:00:59  Encountered an error:
+Compilation Error
+  dbt found 2 package(s) specified in packages.yml, but only 0 package(s) installed in dbt_packages. Run "dbt deps" to install package dependencies.
+```
+
+
+####  Install deps
+
+We fix this by running the following command:
+
+```sh
+docker compose run --workdir="//usr/app/dbt/taxi_rides_ny" dbt-bq-dtc deps
+```
+
+Now we build again:
+
+```sh
+docker compose run --workdir="//usr/app/dbt/taxi_rides_ny" dbt-bq-dtc build
+```
+
+Another error:
+```sh
+15:01:45  Running with dbt=1.0.9
+15:01:46  Encountered an error:
+Runtime Error
+  Failed to read package: Runtime Error
+    This version of dbt is not supported with the 'dbt_utils' package.
+      Installed version of dbt: =1.0.9
+      Required version of dbt for 'dbt_utils': ['>=1.3.0', '<2.0.0']
+    Check for a different version of the 'dbt_utils' package, or run dbt again with --no-version-check
+
+
+  Error encountered in /usr/app/dbt/taxi_rides_ny/dbt_packages/dbt_utils/dbt_project.yml
+
+Error encountered in /usr/app/dbt/taxi_rides_ny/dbt_packages/dbt_utils
+```
+
+We don't want to change the Docker image, thus we do as suggested and skip the version check:
+
+```sh
+docker compose run --workdir="//usr/app/dbt/taxi_rides_ny" dbt-bq-dtc build --no-version-check
+```
+
+Next Error:
+
+```sh
+15:04:58  Running with dbt=1.0.9
+15:04:58  Partial parse save file not found. Starting full parse.
+15:04:59  Encountered an error:
+Compilation Error
+  dbt found two macros named "get_payment_type_description" in the project
+  "taxi_rides_ny".
+   To fix this error, rename or remove one of the following macros:
+      - macros/.ipynb_checkpoints/get_payment_type_description-checkpoint.sql
+      - macros/get_payment_type_description.sql
+```
+
+We remove the `.ipynb_checkpoints` folder.
+
+Next Error:
+
+```sh
+15:09:34  Running with dbt=1.0.9
+15:09:34  Partial parse save file not found. Starting full parse.
+15:09:35  Encountered an error:
+Compilation Error in model stg_yellow_tripdata (models/staging/stg_yellow_tripdata.sql)
+  'dict object' has no attribute 'type_string'
+
+  > in macro generate_surrogate_key (macros/sql/generate_surrogate_key.sql)
+  > called by macro default__generate_surrogate_key (macros/sql/generate_surrogate_key.sql)
+  > called by model stg_yellow_tripdata (models/staging/stg_yellow_tripdata.sql)
+```
+
+
+
 
 ## Important concepts
 

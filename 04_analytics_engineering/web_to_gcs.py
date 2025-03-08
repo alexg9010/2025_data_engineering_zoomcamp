@@ -34,11 +34,13 @@ def upload_to_gcs(bucket, object_name, local_file):
 
 def fix_types(df):
     # cast time data to timestamp
-    for column in df.filter(regex='datetime').columns:
+    for column in df.filter(regex='datetime64').columns:
         df[column] = pd.to_datetime(df[column])
     # also cast IDs and types to integer
-    for column in df.filter(regex='ID|type').columns:
+    for column in df.filter(regex='ID|type|count').columns:
         df[column] = df[column].astype('Int64') 
+    for column in df.filter(regex='flag').columns:
+        df[column] = df[column].astype('string') 
     return df
 
 def web_to_gcs(year, service):
@@ -59,11 +61,13 @@ def web_to_gcs(year, service):
 
         # load as csv 
         df = pd.read_csv(file_name, compression='gzip')
-        #fix schema
+        # fix schema
         df = fix_types(df)
         # read it back into a parquet file
         file_name = file_name.replace('.csv.gz', '.parquet')
-        df.to_parquet(file_name, engine='pyarrow')
+        # export time as us (microseconds) instead of default ns
+        # https://www.reddit.com/r/bigquery/comments/16aoq0u/comment/jzk0zmj/
+        df.to_parquet(file_name, engine='pyarrow',coerce_timestamps='us')
         print(f"Parquet: {file_name}")        
 
         # upload it to gcs 
@@ -91,5 +95,4 @@ if __name__ == "__main__":
         web_to_gcs('2020', 'green')
         web_to_gcs('2019', 'yellow')
         web_to_gcs('2020', 'yellow')
-
         web_to_gcs('2019', 'fhv')
